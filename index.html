@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Potwierdzenie przyjazdu — xCargo</title>
+<style>
+  /* ==========================================================
+     xCargo — potwierdzenie przyjazdu kierowcy
+     Projekt pod telefon kierowcy: duże pola, wysoki kontrast,
+     czytelność w słońcu. Akcent: żółć hi-vis (kamizelka).
+     ========================================================== */
+  :root {
+    --asphalt: #1b1e23;      /* tekst główny */
+    --steel:   #5a616b;      /* tekst pomocniczy */
+    --line:    #d4d7db;      /* obramowania */
+    --paper:   #f4f5f3;      /* tło strony */
+    --card:    #ffffff;      /* tło karty */
+    --hivis:   #ffc400;      /* akcent hi-vis */
+    --hivis-d: #b88a00;      /* akcent ciemniejszy (focus) */
+    --plate-blue: #003fa3;   /* niebieski pasek tablicy rej. */
+    --ok:      #1e7c3a;      /* sukces */
+    --err:     #b3261e;      /* błąd */
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    background: var(--paper);
+    color: var(--asphalt);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* Pasek ostrzegawczy jak na szlabanie */
+  .hazard {
+    width: 100%;
+    height: 10px;
+    background: repeating-linear-gradient(
+      -45deg,
+      var(--hivis) 0 16px,
+      var(--asphalt) 16px 32px
+    );
+  }
+
+  header {
+    width: 100%;
+    max-width: 480px;
+    padding: 20px 20px 4px;
+  }
+  .brand {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--steel);
+  }
+  h1 {
+    font-size: 26px;
+    line-height: 1.2;
+    font-weight: 800;
+    margin-top: 6px;
+    letter-spacing: -0.01em;
+  }
+  .sub {
+    margin-top: 6px;
+    font-size: 15px;
+    color: var(--steel);
+    line-height: 1.45;
+  }
+
+  main {
+    width: 100%;
+    max-width: 480px;
+    padding: 16px 20px 40px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 20px 18px;
+  }
+
+  .field { margin-bottom: 18px; }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--steel);
+    margin-bottom: 6px;
+  }
+  input[type="text"] {
+    width: 100%;
+    font-size: 18px;
+    padding: 14px 14px;
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--asphalt);
+    font-family: inherit;
+  }
+  input[type="text"]:focus {
+    outline: 3px solid var(--hivis);
+    outline-offset: 1px;
+    border-color: var(--hivis-d);
+  }
+  input[readonly] {
+    background: #f7f8f7;
+    color: var(--asphalt);
+  }
+
+  /* Pola rejestracji stylizowane na tablicę: niebieski pasek + czcionka tablicowa */
+  .plate-wrap {
+    display: flex;
+    border: 2px solid var(--asphalt);
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+  }
+  .plate-wrap:focus-within {
+    outline: 3px solid var(--hivis);
+    outline-offset: 1px;
+  }
+  .plate-band {
+    width: 30px;
+    background: var(--plate-blue);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    gap: 2px;
+    flex: none;
+  }
+  .plate-band .stars { font-size: 8px; letter-spacing: 0.1em; }
+  .plate-wrap input {
+    border: none;
+    border-radius: 0;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-family: "Arial Narrow", Arial, sans-serif;
+    font-size: 22px;
+    padding: 12px 12px;
+  }
+  .plate-wrap input:focus { outline: none; }
+
+  /* Checkbox ABC — duży cel dotykowy */
+  .abc {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px;
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    background: #fffdf2;
+    margin-bottom: 20px;
+    cursor: pointer;
+  }
+  .abc input {
+    width: 26px;
+    height: 26px;
+    flex: none;
+    margin-top: 1px;
+    accent-color: var(--asphalt);
+    cursor: pointer;
+  }
+  .abc .abc-title { font-size: 16px; font-weight: 700; }
+  .abc .abc-hint { font-size: 13px; color: var(--steel); margin-top: 2px; line-height: 1.4; }
+
+  button#submitBtn {
+    width: 100%;
+    padding: 18px;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    font-family: inherit;
+    color: var(--asphalt);
+    background: var(--hivis);
+    border: 2px solid var(--asphalt);
+    border-radius: 12px;
+    cursor: pointer;
+  }
+  button#submitBtn:focus-visible {
+    outline: 3px solid var(--asphalt);
+    outline-offset: 2px;
+  }
+  button#submitBtn:disabled {
+    opacity: 0.55;
+    cursor: default;
+  }
+
+  .msg {
+    display: none;
+    margin-top: 16px;
+    padding: 14px;
+    border-radius: 10px;
+    font-size: 15px;
+    line-height: 1.45;
+  }
+  .msg.err { background: #fdecea; color: var(--err); border: 1px solid #f2c4c0; }
+
+  /* Ekran sukcesu */
+  .done {
+    display: none;
+    text-align: center;
+    padding: 36px 18px;
+  }
+  .done .check {
+    width: 74px; height: 74px;
+    border-radius: 50%;
+    background: var(--ok);
+    color: #fff;
+    font-size: 40px;
+    line-height: 74px;
+    margin: 0 auto 18px;
+  }
+  .done h2 { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+  .done p { font-size: 16px; color: var(--steel); line-height: 1.5; }
+  .done .stamp {
+    display: inline-block;
+    margin-top: 16px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--asphalt);
+    border: 1.5px dashed var(--line);
+    border-radius: 8px;
+    padding: 8px 14px;
+  }
+
+  /* Ekran błędnego linku */
+  .invalid {
+    display: none;
+    text-align: center;
+    padding: 36px 18px;
+  }
+  .invalid h2 { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+  .invalid p { font-size: 15px; color: var(--steel); line-height: 1.5; }
+
+  footer {
+    margin-top: auto;
+    padding: 18px;
+    font-size: 12px;
+    color: var(--steel);
+    text-align: center;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .card, .done, .invalid { animation: rise 0.25s ease-out; }
+    @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  }
+</style>
+</head>
+<body>
+
+<div class="hazard" aria-hidden="true"></div>
+
+<header>
+  <div class="brand">xCargoLogistic · Plac</div>
+  <h1>Potwierdzenie przyjazdu</h1>
+  <p class="sub" id="subText">Sprawdź swoje dane i potwierdź, że jesteś na placu.</p>
+</header>
+
+<main>
+  <!-- FORMULARZ -->
+  <div class="card" id="formCard">
+    <div class="field">
+      <label for="driverName">Imię i nazwisko kierowcy</label>
+      <input type="text" id="driverName" autocomplete="name" inputmode="text">
+    </div>
+
+    <div class="field">
+      <label for="truckPlate">Nr rejestracyjny auta</label>
+      <div class="plate-wrap">
+        <div class="plate-band" aria-hidden="true"><span class="stars">★★★</span><span>PL</span></div>
+        <input type="text" id="truckPlate" autocomplete="off" autocapitalize="characters">
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="trailerPlate">Nr rejestracyjny naczepy</label>
+      <div class="plate-wrap">
+        <div class="plate-band" aria-hidden="true"><span class="stars">★★★</span><span>PL</span></div>
+        <input type="text" id="trailerPlate" autocomplete="off" autocapitalize="characters">
+      </div>
+    </div>
+
+    <label class="abc" for="abcConfirmed">
+      <input type="checkbox" id="abcConfirmed">
+      <span>
+        <span class="abc-title">Potwierdź ABC</span>
+        <span class="abc-hint" style="display:block">Zapoznałem się z zasadami obowiązującymi na placu i zobowiązuję się ich przestrzegać.</span>
+      </span>
+    </label>
+
+    <button id="submitBtn" type="button">Potwierdź przyjazd</button>
+
+    <div class="msg err" id="errBox" role="alert"></div>
+  </div>
+
+  <!-- SUKCES -->
+  <div class="card done" id="doneCard">
+    <div class="check" aria-hidden="true">✓</div>
+    <h2>Przyjazd potwierdzony</h2>
+    <p>Dyspozytor xCargo otrzymał informację, że oczekujesz na placu na załadunek. Pozostań przy pojeździe i czekaj na wezwanie.</p>
+    <span class="stamp" id="stamp"></span>
+  </div>
+
+  <!-- NIEPRAWIDŁOWY LINK -->
+  <div class="card invalid" id="invalidCard">
+    <h2>Link jest nieprawidłowy</h2>
+    <p>Ten link nie zawiera danych awizacji. Otwórz link dokładnie w takiej postaci, w jakiej otrzymałeś go w wiadomości SMS, albo skontaktuj się z dyspozytorem xCargo.</p>
+  </div>
+</main>
+
+<footer>xCargoLogistic — system zarządzania placem (YMS)</footer>
+
+<script>
+/* =============================================================
+   KONFIGURACJA — jedyne miejsce do edycji.
+   Wklej pełny Webhook URL skopiowany z Creatio
+   (Import danych -> Web forms and pages -> Get your Webhook URL)
+   ============================================================= */
+var WEBHOOK_URL = "https://webhooks.creatio.com/webhooks/fe8e4a24-d0c5-4616-bb02-a8bdfae9a200";
+
+/* Kody obiektu i kolumn w Creatio */
+var ENTITY_NAME = "UsrArrivalConfirmation";
+var COL = {
+  guid:    "UsrAwizacjaGuid",
+  name:    "UsrDriverName",
+  truck:   "UsrTruckPlate",
+  trailer: "UsrTrailerPlate",
+  abc:     "UsrAbcConfirmed"
+};
+
+/* ---- odczyt parametrów z linku ----
+   Format linku:
+   https://.../?aw=GUID&name=Jan%20Kowalski&truck=WX12345&trailer=WY67890 */
+var params = new URLSearchParams(window.location.search);
+var awGuid  = (params.get("aw") || "").trim();
+var pName   = (params.get("name") || "").trim();
+var pTruck  = (params.get("truck") || "").trim();
+var pTrailer= (params.get("trailer") || "").trim();
+
+var elName    = document.getElementById("driverName");
+var elTruck   = document.getElementById("truckPlate");
+var elTrailer = document.getElementById("trailerPlate");
+var elAbc     = document.getElementById("abcConfirmed");
+var btn       = document.getElementById("submitBtn");
+var errBox    = document.getElementById("errBox");
+
+/* Bez GUID awizacji formularz nie ma sensu — pokaż ekran błędu */
+if (!awGuid) {
+  document.getElementById("formCard").style.display = "none";
+  document.getElementById("subText").style.display = "none";
+  document.getElementById("invalidCard").style.display = "block";
+}
+
+/* Prefill: pola z danymi z linku są tylko do odczytu;
+   puste pozostają edytowalne (awaryjnie kierowca dopisze sam). */
+function prefill(el, val) {
+  if (val) { el.value = val; el.setAttribute("readonly", "readonly"); }
+}
+prefill(elName, pName);
+prefill(elTruck, pTruck);
+prefill(elTrailer, pTrailer);
+
+function showError(text) {
+  errBox.textContent = text;
+  errBox.style.display = "block";
+}
+
+btn.addEventListener("click", function () {
+  errBox.style.display = "none";
+
+  if (WEBHOOK_URL.indexOf("webhooks.creatio.com") === -1) {
+    showError("Formularz nie został jeszcze skonfigurowany (brak adresu webhooka). Skontaktuj się z dyspozytorem xCargo.");
+    return;
+  }
+  if (!elName.value.trim() || !elTruck.value.trim()) {
+    showError("Uzupełnij imię i nazwisko oraz numer rejestracyjny auta.");
+    return;
+  }
+  if (!elAbc.checked) {
+    showError("Zaznacz pole „Potwierdź ABC”, aby potwierdzić przyjazd.");
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = "Wysyłanie…";
+
+  var data = new FormData();
+  data.append("EntityName", ENTITY_NAME);
+  data.append(COL.guid, awGuid);
+  data.append(COL.name, elName.value.trim());
+  data.append(COL.truck, elTruck.value.trim().toUpperCase());
+  data.append(COL.trailer, elTrailer.value.trim().toUpperCase());
+  data.append(COL.abc, elAbc.checked ? "true" : "false");
+
+  /* mode: "no-cors" — żądanie dochodzi do Creatio, ale przeglądarka
+     nie czyta odpowiedzi (webhook zawsze odpowiada 200). */
+  fetch(WEBHOOK_URL, { method: "POST", body: data, mode: "no-cors" })
+    .then(function () { showDone(); })
+    .catch(function () {
+      btn.disabled = false;
+      btn.textContent = "Potwierdź przyjazd";
+      showError("Nie udało się wysłać potwierdzenia. Sprawdź zasięg internetu i spróbuj ponownie.");
+    });
+});
+
+function showDone() {
+  document.getElementById("formCard").style.display = "none";
+  document.getElementById("subText").style.display = "none";
+  var now = new Date();
+  var pad = function (n) { return (n < 10 ? "0" : "") + n; };
+  document.getElementById("stamp").textContent =
+    "Zgłoszono: " + pad(now.getDate()) + "." + pad(now.getMonth() + 1) + "." + now.getFullYear() +
+    ", " + pad(now.getHours()) + ":" + pad(now.getMinutes());
+  document.getElementById("doneCard").style.display = "block";
+  window.scrollTo(0, 0);
+}
+</script>
+</body>
+</html>
