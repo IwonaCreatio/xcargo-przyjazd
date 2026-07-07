@@ -109,10 +109,6 @@
     outline-offset: 1px;
     border-color: var(--hivis-d);
   }
-  input[readonly] {
-    background: #f7f8f7;
-    color: var(--asphalt);
-  }
 
   /* Pola rejestracji stylizowane na tablicę: niebieski pasek + czcionka tablicowa */
   .plate-wrap {
@@ -268,7 +264,7 @@
 <header>
   <div class="brand">xCargoLogistic · Plac</div>
   <h1>Potwierdzenie przyjazdu</h1>
-  <p class="sub" id="subText">Sprawdź swoje dane i potwierdź, że jesteś na placu.</p>
+  <p class="sub" id="subText">Uzupełnij swoje dane i potwierdź, że jesteś na placu.</p>
 </header>
 
 <main>
@@ -344,13 +340,10 @@ var COL = {
 };
 
 /* ---- odczyt parametrów z linku ----
-   Format linku:
-   https://.../?aw=GUID&name=Jan%20Kowalski&truck=WX12345&trailer=WY67890 */
+   Format linku: https://.../?aw=GUID
+   (dane kierowca wpisuje samodzielnie — bez prefillu) */
 var params = new URLSearchParams(window.location.search);
 var awGuid  = (params.get("aw") || "").trim();
-var pName   = (params.get("name") || "").trim();
-var pTruck  = (params.get("truck") || "").trim();
-var pTrailer= (params.get("trailer") || "").trim();
 
 var elName    = document.getElementById("driverName");
 var elTruck   = document.getElementById("truckPlate");
@@ -366,15 +359,6 @@ if (!awGuid) {
   document.getElementById("invalidCard").style.display = "block";
 }
 
-/* Prefill: pola z danymi z linku są tylko do odczytu;
-   puste pozostają edytowalne (awaryjnie kierowca dopisze sam). */
-function prefill(el, val) {
-  if (val) { el.value = val; el.setAttribute("readonly", "readonly"); }
-}
-prefill(elName, pName);
-prefill(elTruck, pTruck);
-prefill(elTrailer, pTrailer);
-
 function showError(text) {
   errBox.textContent = text;
   errBox.style.display = "block";
@@ -385,10 +369,6 @@ btn.addEventListener("click", function () {
 
   if (WEBHOOK_URL.indexOf("webhooks.creatio.com") === -1) {
     showError("Formularz nie został jeszcze skonfigurowany (brak adresu webhooka). Skontaktuj się z dyspozytorem xCargo.");
-    return;
-  }
-  if (!elName.value.trim() || !elTruck.value.trim()) {
-    showError("Uzupełnij imię i nazwisko oraz numer rejestracyjny auta.");
     return;
   }
   if (!elAbc.checked) {
